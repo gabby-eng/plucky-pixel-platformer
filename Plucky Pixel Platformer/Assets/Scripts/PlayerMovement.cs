@@ -8,15 +8,12 @@ public class PlayerMovement : MonoBehaviour
     private SpriteRenderer sprite;
     private Animator anim; 
     private float xDir;
-    private float yDir;
     private float runForce = 8f;
-    private float jumpForce = 14f;
-    private bool isGrounded = true;
+    private float jumpForce = 18f;
+    private float jumpGravityScale = 4.5f;
+    private float fallGravityScale = 14f;
 
-    [SerializeField] private float jumpGravityScale = 5f;
-    [SerializeField] private float fallGravityScale = 10f;
-
-    private enum MovementStates { idling, running, jumping, doubleJumping, wallJumping, falling, hitting, dying };
+    private enum MovementState { idling, running, jumping, doubleJumping, wallJumping, falling, hitting, dying };
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -27,46 +24,47 @@ public class PlayerMovement : MonoBehaviour
     private void Update()
     {
         xDir = Input.GetAxisRaw("Horizontal");
-        yDir = Input.GetAxisRaw("Vertical");
         rb.velocity = new Vector2(xDir * runForce, rb.velocity.y);
 
-        if (Input.GetButtonDown("Jump") && isGrounded)
+        if (Input.GetButtonDown("Jump"))
         {
-            anim.SetInteger("state", (int)MovementStates.jumping);
-            Jump();
-            isGrounded = true;
-        }
-
-        if (rb.velocity.y < 0f)
-        {
-            rb.gravityScale = fallGravityScale;
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         }
 
         UpdateAnimationState();
     }
 
-    private void Jump()
-    {
-        rb.gravityScale = jumpGravityScale;
-        rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-        isGrounded = false;
-    }
-
     private void UpdateAnimationState()
     {
+        MovementState state;
+
         if (xDir < 0f)
         {
-            anim.SetInteger("state", (int)MovementStates.running);
+            state = MovementState.running;
             sprite.flipX = true;
         }
         else if (xDir > 0f)
         {
-            anim.SetInteger("state", (int)MovementStates.running);
+            state = MovementState.running;
             sprite.flipX = false;
         }
         else
         {
-            anim.SetInteger("state", (int)MovementStates.idling);
+            state = MovementState.idling;
         }
+
+        if (rb.velocity.y > .1f)
+        {
+            rb.gravityScale = jumpGravityScale;
+            state = MovementState.jumping;
+        }
+        else if (rb.velocity.y < -.1f)
+        {
+            rb.gravityScale = fallGravityScale;
+            state = MovementState.falling;
+        }
+        anim.SetInteger("state", (int)state);
+
     }
+
 }
