@@ -15,6 +15,8 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] private float jumpGravityScale = 5f;
     [SerializeField] private float fallGravityScale = 10f;
+
+    private enum MovementStates { idling, running, jumping, doubleJumping, wallJumping, falling, hitting, dying };
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -28,27 +30,19 @@ public class PlayerMovement : MonoBehaviour
         yDir = Input.GetAxisRaw("Vertical");
         rb.velocity = new Vector2(xDir * runForce, rb.velocity.y);
 
-        if (xDir < 0)
-        {
-            Debug.Log("Going left!");
-            sprite.flipX = true;
-        } else if (xDir > 0)
-        {
-            Debug.Log("Going right!");
-            sprite.flipX = false;
-        }
-
         if (Input.GetButtonDown("Jump") && isGrounded)
         {
-            Debug.Log("Jumping once!");
+            anim.SetInteger("state", (int)MovementStates.jumping);
             Jump();
             isGrounded = true;
         }
 
-        if (rb.velocity.y < 0)
+        if (rb.velocity.y < 0f)
         {
             rb.gravityScale = fallGravityScale;
         }
+
+        UpdateAnimationState();
     }
 
     private void Jump()
@@ -56,5 +50,23 @@ public class PlayerMovement : MonoBehaviour
         rb.gravityScale = jumpGravityScale;
         rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         isGrounded = false;
+    }
+
+    private void UpdateAnimationState()
+    {
+        if (xDir < 0f)
+        {
+            anim.SetInteger("state", (int)MovementStates.running);
+            sprite.flipX = true;
+        }
+        else if (xDir > 0f)
+        {
+            anim.SetInteger("state", (int)MovementStates.running);
+            sprite.flipX = false;
+        }
+        else
+        {
+            anim.SetInteger("state", (int)MovementStates.idling);
+        }
     }
 }
