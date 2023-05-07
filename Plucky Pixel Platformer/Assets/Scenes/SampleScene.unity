@@ -17107,7 +17107,7 @@ GameObject:
   - component: {fileID: 495210257}
   - component: {fileID: 495210258}
   - component: {fileID: 495210259}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Terrain
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -19362,8 +19362,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c71dc61ebd2a4040a003adeec42527c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  jumpGravityScale: 5
-  fallGravityScale: 10
+  jumpableGround:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!95 &1373617804
 Animator:
   serializedVersion: 5
