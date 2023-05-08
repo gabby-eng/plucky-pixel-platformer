@@ -16,7 +16,6 @@ public class PlayerMovement : MonoBehaviour
     private float jumpForce = 18f;
     private float jumpGravityScale = 4.5f;
     private float fallGravityScale = 14f;
-
     private enum MovementState { idling, running, jumping, doubleJumping, wallJumping, falling, hitting, dying };
     private void Start()
     {
