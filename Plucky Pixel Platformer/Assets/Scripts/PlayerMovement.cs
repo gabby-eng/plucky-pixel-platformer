@@ -35,7 +35,6 @@ public class PlayerMovement : MonoBehaviour
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         }
-
         UpdateAnimationState();
     }
 
@@ -69,7 +68,6 @@ public class PlayerMovement : MonoBehaviour
             state = MovementState.falling;
         }
         anim.SetInteger("state", (int)state);
-
     }
 
     private bool isGrounded()
@@ -81,11 +79,6 @@ public class PlayerMovement : MonoBehaviour
         // jumpableGround is the LayerMask we set on the terrain
         // meaning that if the new boxCollider2D we created (toe box) overlaps with jumpableGround, isGrounded returns true
         return Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.down, .1f, jumpableGround);
-    }
-
-    private bool canWallJump()
-    {
-        return Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.left, .1f, jumpableGround) || Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.right, .1f, jumpableGround);
     }
 
 }
