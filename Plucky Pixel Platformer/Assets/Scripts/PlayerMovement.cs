@@ -10,12 +10,21 @@ public class PlayerMovement : MonoBehaviour
     private Animator anim; 
 
     [SerializeField] private LayerMask jumpableGround;
+    [SerializeField] private Transform toesPosition;
 
-    private float xDir;
+
+    private float xDir = 0f;
     private float runForce = 8f;
-    private float jumpForce = 18f;
+    private float jumpForce = 11f;
     private float jumpGravityScale = 4.5f;
     private float fallGravityScale = 14f;
+    private float checkRadius = 0.3f;
+    private float jumpTimeCounter;
+    private float jumpTime = 0.2f;
+
+    private bool isJumping;
+    private bool isDoubleJumping;
+
     private enum MovementState { idling, running, jumping, doubleJumping, wallJumping, falling, hitting, dying };
     private void Start()
     {
@@ -27,13 +36,34 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        // Moving Left and Right
         xDir = Input.GetAxisRaw("Horizontal");
         rb.velocity = new Vector2(xDir * runForce, rb.velocity.y);
 
         if (Input.GetButtonDown("Jump") && isGrounded())
         {
+            isJumping = true;
+            jumpTimeCounter = jumpTime;
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         }
+
+        if (Input.GetButton("Jump") && isJumping)
+        {
+            if (jumpTimeCounter > 0f)
+            {
+                rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+                jumpTimeCounter -= Time.deltaTime;
+            } else
+            {
+                isJumping = false;
+            }
+
+            if (Input.GetButtonUp("Jump"))
+            {
+                isJumping = false;
+            }
+        }
+
         UpdateAnimationState();
     }
 
@@ -43,11 +73,13 @@ public class PlayerMovement : MonoBehaviour
 
         if (xDir < 0f)
         {
+            Debug.Log("Left");
             state = MovementState.running;
             sprite.flipX = true;
         }
         else if (xDir > 0f)
         {
+            Debug.Log("Right");
             state = MovementState.running;
             sprite.flipX = false;
         }
@@ -56,13 +88,15 @@ public class PlayerMovement : MonoBehaviour
             state = MovementState.idling;
         }
 
-        if (rb.velocity.y > .1f)
+        if (rb.velocity.y > .1f && !isDoubleJumping)
         {
+            Debug.Log("Jump");
             rb.gravityScale = jumpGravityScale;
             state = MovementState.jumping;
         }
         else if (rb.velocity.y < -.1f)
         {
+            Debug.Log("Fall");
             rb.gravityScale = fallGravityScale;
             state = MovementState.falling;
         }
@@ -71,13 +105,7 @@ public class PlayerMovement : MonoBehaviour
 
     private bool isGrounded()
     {
-        // coll is the boxCollider2D around the player
-        // coll.bounds.center, coll.bounds.size creates the same size boxCollider2D around the player
-        // 0f represents the rotation of the new boxCollider2D, 0f here because we want the same exact shape
-        // Vector2.down, .1f moves the new boxCollider2D we created a little bit down towards the toes of the player
-        // jumpableGround is the LayerMask we set on the terrain
-        // meaning that if the new boxCollider2D we created (toe box) overlaps with jumpableGround, isGrounded returns true
-        return Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.down, .1f, jumpableGround);
+        return Physics2D.OverlapCircle(toesPosition.position, checkRadius, jumpableGround);
     }
 
 }
