@@ -15,8 +15,8 @@ public class PlayerMovement : MonoBehaviour
 
     private float xDir = 0f;
     private float runForce = 8f;
-    private float jumpForce = 11f;
-    private float jumpGravityScale = 4.5f;
+    private float jumpForce = 10f;
+    private float jumpGravityScale = 4f;
     private float fallGravityScale = 14f;
     private float checkRadius = 0.3f;
     private float jumpTimeCounter;
@@ -24,6 +24,8 @@ public class PlayerMovement : MonoBehaviour
 
     private bool isJumping;
     private bool isDoubleJumping;
+
+    private int numJumps = 2;
 
     private enum MovementState { idling, running, jumping, doubleJumping, wallJumping, falling, hitting, dying };
     private void Start()
@@ -40,7 +42,18 @@ public class PlayerMovement : MonoBehaviour
         xDir = Input.GetAxisRaw("Horizontal");
         rb.velocity = new Vector2(xDir * runForce, rb.velocity.y);
 
-        if (Input.GetButtonDown("Jump") && isGrounded())
+        if (isGrounded())
+        {
+            numJumps = 2;
+        }
+
+        if (Input.GetButtonDown("Jump") && numJumps > 0)
+        {
+            isJumping = true;
+            jumpTimeCounter = jumpTime;
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            numJumps--;
+        } else if (Input.GetButtonDown("Jump") && numJumps == 0 && isGrounded())
         {
             isJumping = true;
             jumpTimeCounter = jumpTime;
@@ -70,6 +83,11 @@ public class PlayerMovement : MonoBehaviour
     private void UpdateAnimationState()
     {
         MovementState state;
+
+        if (isDoubleJumping)
+        {
+            state = MovementState.doubleJumping;
+        }
 
         if (xDir < 0f)
         {
