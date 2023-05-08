@@ -10,7 +10,7 @@ public class PlayerMovement : MonoBehaviour
     private Animator anim; 
 
     [SerializeField] private LayerMask jumpableGround;
-    [SerializeField] private Transform toesPosition;
+    [SerializeField] private Transform checkGround;
 
 
     private float xDir = 0f;
@@ -23,9 +23,8 @@ public class PlayerMovement : MonoBehaviour
     private float jumpTime = 0.2f;
 
     private bool isJumping;
-    private bool isDoubleJumping;
 
-    private int numJumps = 2;
+    private int extraJumps;
 
     private enum MovementState { idling, running, jumping, doubleJumping, wallJumping, falling, hitting, dying };
     private void Start()
@@ -38,22 +37,21 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-        // Moving Left and Right
         xDir = Input.GetAxisRaw("Horizontal");
         rb.velocity = new Vector2(xDir * runForce, rb.velocity.y);
 
         if (isGrounded())
         {
-            numJumps = 2;
+            extraJumps = 1;
         }
 
-        if (Input.GetButtonDown("Jump") && numJumps > 0)
+        if (Input.GetButtonDown("Jump") && extraJumps > 0)
         {
             isJumping = true;
             jumpTimeCounter = jumpTime;
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-            numJumps--;
-        } else if (Input.GetButtonDown("Jump") && numJumps == 0 && isGrounded())
+            extraJumps--;
+        } else if (Input.GetButtonDown("Jump") && extraJumps == 0 && isGrounded())
         {
             isJumping = true;
             jumpTimeCounter = jumpTime;
@@ -84,11 +82,6 @@ public class PlayerMovement : MonoBehaviour
     {
         MovementState state;
 
-        if (isDoubleJumping)
-        {
-            state = MovementState.doubleJumping;
-        }
-
         if (xDir < 0f)
         {
             Debug.Log("Left");
@@ -106,7 +99,7 @@ public class PlayerMovement : MonoBehaviour
             state = MovementState.idling;
         }
 
-        if (rb.velocity.y > .1f && !isDoubleJumping)
+        if (rb.velocity.y > .1f)
         {
             Debug.Log("Jump");
             rb.gravityScale = jumpGravityScale;
@@ -123,7 +116,7 @@ public class PlayerMovement : MonoBehaviour
 
     private bool isGrounded()
     {
-        return Physics2D.OverlapCircle(toesPosition.position, checkRadius, jumpableGround);
+        return Physics2D.OverlapCircle(checkGround.position, checkRadius, jumpableGround);
     }
 
 }
